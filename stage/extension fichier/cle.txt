@@ -1,0 +1,21 @@
+emplacement clé publique: C:\Users\Utilisateur/.ssh/id_ed25519.pub
+emplacement clé privé :C:\Users\Utilisateur/.ssh/id_ed25519
+
+
+Your identification has been saved in C:\Users\Utilisateur/.ssh/id_ed25519
+Your public key has been saved in C:\Users\Utilisateur/.ssh/id_ed25519.pub
+The key fingerprint is:
+SHA256:vXkVXFpCoe6sL8SFFyFqG3AerbFFwxFqwVNS6kci4W0 utilisateur@Elams-PC
+The key's randomart image is:
++--[ED25519 256]--+
+|      o.=*Oo.o+.o|
+|     . *+B+o.o = |
+|      o E*....+  |
+|       *o*..o  . |
+|        S.oo. .  |
+|         .o= .   |
+|         .o +    |
+|          .o     |
+|          .o.    |
++----[SHA256]-----+
+PS C:\Users\Utilisateur>
