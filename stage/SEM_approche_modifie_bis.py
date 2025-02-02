@@ -104,7 +104,7 @@ def fabricmatrice(X,w,phi,dphi,rho,mat):
             J=c.T@coords #Jacobien
             aux = np.linalg.inv(J)@ c.T
             ktemp=ktemp+(w[i]*np.linalg.det(J)*aux.T@mat@aux)
-            mtemps += w[i] * np.linalg.det(J) * d @ d.T
+            mtemps += w[i] * np.linalg.det(J) * d @rho@ d.T
         K_local.append(ktemp)
         M_local.append(mtemps)
     return K_local,M_local
@@ -138,23 +138,34 @@ def approcheModifié(duree,Longueur,r,f,a,ua,K,M_inverse,dt,dx,c,k):
     N_temps=int(duree/dt)
     L=int(Longueur/dx)
     N_espace=L*r+1
-    a_=int(a/dx)*r+1
+    a_=int(a/dx)*r
     U=np.zeros((N_espace,N_temps+1))
     N=M_inverse@K
     if k>1:
         liste=[]
         for j in range(2,k+1):
-            coef=2*((-1)*c_2)**j*dt**(2*j)/math.factorial(2*j)
+            coef=2*(((-1)*c_2)**j)*(dt**(2*j))/math.factorial(2*j)
             liste.append(coef*np.linalg.matrix_power(N,j))
-        for i in range(2,N_temps):
-            U[:,i]=-(dt**2)*(c_2)*N@U[:,i-1] +2*U[:,i-1]-U[:,i-2]
-            for j in range(k-2):
-                U[:,i] += liste[j]@U[:,i-1]
-            U[a_,i]=ua[i]
+        for i in range(2,N_temps+1):
+            if i*dt<=(1/f):
+                U[:,i]=-(dt**2)*c_2*N@U[:,i-1] +2*U[:,i-1]-U[:,i-2]
+                for j in range(len(liste)):
+                    U[:,i] += liste[j]@U[:,i-1]
+                U[a_,i]=ua[i]
+            else:
+                U[:,i]=-(dt**2)*(c_2)*N@U[:,i-1] +2*U[:,i-1]-U[:,i-2]
+                for j in range(len(liste)):
+                    U[:,i] += liste[j]@U[:,i-1]
+            
+            
     else:
-        for i in range(2,N_temps):
-            U[:,i]=-(dt**2)*(c_2)*N@U[:,i-1] +2*U[:,i-1]-U[:,i-2]
-            U[a_,i]=ua[i]
+        for i in range(2,N_temps+1):
+            if i*dt<=(1/f):
+                U[:,i]=-(dt**2)*(c_2)*N@U[:,i-1] +2*U[:,i-1]-U[:,i-2]
+                U[a_,i]=ua[i]
+            else:
+                U[:,i]=-(dt**2)*(c_2)*N@U[:,i-1] +2*U[:,i-1]-U[:,i-2]
+            
         
     return U
 
@@ -188,9 +199,10 @@ def Matrice_deplacement(c,rho,mat,duree,Longueur,r,dt,dx,f,a,amplitude,t,k):
 
 if __name__=="__main__":
     #Paramètre simul/matériaux/Onde/Source/
-    dt=0.020
-    dx=0.05
+    dt=0.001
+    dx=0.02
     r=2
+    k=2
 
     mat=np.eye(1)
     rho=np.eye(1)
@@ -205,8 +217,8 @@ if __name__=="__main__":
     periode=1/f
     a=Longueur/2
     exemplepoint=1
-    amplitude=100/22
-    diracIndice=int((a/dx)*r+1)
+    instant=20
+    amplitude=10
 
     #discrétisation du temps
     t = np.linspace(0, Duree, N+1)
@@ -224,146 +236,68 @@ if __name__=="__main__":
 
     U=np.zeros((N_point,N+1))
     ua=[condition(i*dt,amplitude,f) for i in range(N+1)]
-    U=approcheModifié(Duree, Longueur, r, f, a, ua, K, M_inverse, dt, dx, c, 2)
+    U=approcheModifié(Duree, Longueur, r, f, a, ua, K, M_inverse, dt, dx, c, k)
 
     # U,Mesh=Matrice_deplacement(c,rho,mat,Duree,Longueur,r,dt,dx,f,a,amplitude,t,2)
 
 
 
 
-    def erreur_MEA(K,M_inverse,c,duree,Longueur,rho,mat,f,A,a,dt,dx,r,t,k):
-        omega=2*np.pi*f
-        T=1/f
-        N=int(duree/dt)
-        N_point=int(Longueur/dx)*r+1
-        ua=[condition(i*dt,A,f) for i in range(N)]
-        U=np.zeros((N_point,N+1))
-        U=approcheModifié(duree,Longueur,r,f,a,ua,K,M_inverse,dt,dx,c,k)
-        U_exact=exact.matrice_depl(t,Mesh,a,c,A,omega,T,L)
-        return 0.5*math.log(np.max(np.abs(U_exact-U)) ,10)
-        
-    print(erreur_MEA(K,M_inverse,c,Duree,Longueur,rho,mat,f,amplitude,a,dt,dx,r,t,2))
-
-        
-
-            
-        
-
-
-
-
-    def test_MEA (c,Duree,Longueur,rho,mat,f,amplitude,a,dx,r,k_max,nombre_point):
-        temps=[0.01+i*0.001 for i in range(0,nombre_point)]
-       
-        alpha=[c*dt/dx for dt in temps]
-        Y=[]
-        for i in range(1,k_max+1):
-            MEA=[]
-            for dt in temps: 
-                Nb=int(Duree/dt)
-                t=np.linspace(0,Duree,Nb+1)
-                MEA.append(erreur_MEA(K,M_inverse,c,Duree,Longueur,rho,mat,f,amplitude,a,dt,dx,r,t,i) )
-            
-            Y.append(MEA)
-            MEA=[]
-        return temps,alpha,Y
-
-    def affiche_1(alpha,temps,Y):
-        plt.figure()
-        plt.scatter(alpha,Y[0],label="ordre=2",marker='x')
-        for i in range(1,len(Y)):
-            plt.scatter(alpha,Y[i],label=f'ordre={i*2+2}',marker='x')
-        plt.xlabel("alpha")
-        plt.ylabel("Log(norme_L2(erreur)")
-        plt.grid()
-        plt.legend()
-        plt.show()
-        plt.figure()
-        plt.scatter(temps,Y[0],label="ordre=2",marker='x')
-        for i in range(1,len(Y)):
-            plt.scatter(temps,Y[i],label=f'ordre={i*2+2}',marker='x')
-        plt.xlabel("dt")
-        plt.ylabel("Log(norme_L2(erreur)")
-        plt.grid()
-        plt.legend()
-        plt.show()
-        
-        return
-        
-        
-    def select(L,seuil):
-        i=0
-        while L[i]<seuil and i<len(L)-1:
-            i=i+1
-        for j in range(i,len(L)-1):
-            del L[i]
-        return i
-
-    # temps,alpha,Y=test_MEA (c,Duree,Longueur,rho,mat,f,amplitude,a,dx,r,2,15)
-
-    # affiche_1(alpha,temps,Y)
-
-
-    # seuil=50
-
-     
-
-
-    # plt.figure()
-
-    # plt.scatter([1,2,3,4,5], [k0,k2,k3,k4,k5], color='red')
-    # plt.annotate("k0", (1, k0), textcoords="offset points", xytext=(0, 10), ha='center')
-    # plt.annotate("k2", (2, k2), textcoords="offset points", xytext=(0, 10), ha='center')
-    # plt.annotate("k3", (3, k3), textcoords="offset points", xytext=(0, 10), ha='center')
-    # plt.annotate("k4", (4, k4), textcoords="offset points", xytext=(0, 10), ha='center')
-    # plt.annotate("k5", (5, k5), textcoords="offset points", xytext=(0, 10), ha='center')
-    # plt.show()
-
-
-    # # Visualisation dU déplacement sur tout le
-    # plt.figure(figsize=(10, 6))
-    # plt.title(f"Solution élements spectraux de l'équation de d'Alembert r={r} ")
-    # plt.pcolormesh(t, Mesh, U, shading='auto', cmap='jet')
-    # plt.colorbar(label="Amplitude")
-    # plt.xlabel("Temps (s)")
-    # plt.ylabel("Position (x)")
-    # plt.grid(True)
-    # plt.show()
+    # Visualisation dU déplacement sur tout le
+    plt.figure(figsize=(10, 6))
+    plt.title(f"Solution élements spectraux de l'équation de d'Alembert r={r} ")
+    plt.pcolormesh(t, Mesh, U, shading='auto', cmap='jet')
+    plt.colorbar(label="Amplitude")
+    plt.xlabel("Temps (s)")
+    plt.ylabel("Position (x)")
+    plt.grid(True)
+    plt.show()
 
 
 
 
 
-    # #Affichage de la source, déplacement en 1 point
+    # #Affichage  déplacement en 1 point
 
 
     plt.figure(figsize=(8, 5))
-    plt.plot(t,U[int(exemplepoint/dx)*r+1,:],label=f"amplitude en x={exemplepoint}")
+    plt.plot(t,U[int(exemplepoint/dx)*r,:],label=f"amplitude en x={exemplepoint}")
     plt.xlabel("temps")
     plt.ylabel("déplacement")
+    plt.title(f'Solution SEM r={r} ordre={k}')
     plt.grid()
     plt.legend()
     plt.show()
-    
+    # Affichage en un temps quelconque
+    plt.figure(figsize=(8, 5))
+    plt.plot(Mesh,U[:,int(instant/dt)],"b",label=f'corde en t={instant}')
+    plt.xlabel("temps")
+    plt.ylabel("déplacement")
+    plt.title(f'Solution SEM k={k} en x={exemplepoint}')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
 
 
-    # fig, ax=plt.subplots(subplot_kw={"projection":"3d"})
-    # x,y=np.meshgrid(t,Mesh)
-    # surf=ax.plot_surface(x,y,U)
-    # plt.show()
+    fig, ax=plt.subplots(subplot_kw={"projection":"3d"})
+    x,y=np.meshgrid(t,Mesh)
+    surf=ax.plot_surface(x,y,U)
+    plt.show()
 
 
-    # fig=plt.figure()
-    # plt.xlabel("longueur")
-    # plt.ylabel("deplacement")
-    # plt.title("probleme 1D propagation onde")
-    # line,=plt.plot([],[])
-    # plt.xlim(0,Longueur)
-    # plt.ylim(-amplitude*2,amplitude*2)
+    fig=plt.figure()
+    plt.xlabel("longueur")
+    plt.ylabel("deplacement")
+    plt.title("probleme 1D propagation onde")
+    line,=plt.plot([],[])
+    plt.xlim(0,Longueur)
+    plt.ylim(-amplitude*2,amplitude*2)
 
-    # def animate(i):
-    #      line.set_data(Mesh,U[:,i])
-    #      return line,
-    # ani = animation.FuncAnimation(fig, animate, frames=range(0, N, 100), interval=10, blit=True, repeat=False)
+    def animate(i):
+         line.set_data(Mesh,U[:,i])
+         return line,
+    ani = animation.FuncAnimation(fig, animate, frames=range(0, N, 50), interval=0.01, blit=True, repeat=False)
 
-    # # Enregistrement de l'animation
+    # Enregistrement de l'animation
+    ani.save("propagation_ondesapproche modifé k={k}.mp4", writer="ffmpeg", fps=30)
+    plt.show()

@@ -12,14 +12,14 @@ import SEM_bis as sem
 from solution_exact_bis import matrice_depl_exact
 from SEM_approche_modifie_bis import approcheModifié
 
-dx=0.1
+dx=0.08
 r=2
 k=6
 
 mat=np.eye(1)
 rho=np.eye(1)
 Longueur=10
-duree=30
+duree=21
 L=int(Longueur/dx) #nombre d'élements mais L+1 noeuds
 
 c=1
@@ -81,32 +81,34 @@ def erreur_2(k,dt,dx):
     F=(U[:,instant_]-U_exact[:,instant_])**2
     G=(U_exact[:,instant_])**2
     erreur=integral(F)/integral(G)
+    
     return erreur
 
-# # pour avoir juste ordre 2
-# temps=[0.002*i for i in range(1,22)]
-# alpha=[c*dt/dx for dt in temps]
-# Erreur=[]
-# for i,t in enumerate (temps):
-#     valeur_erreur=erreur(t,dx)
-#     if valeur_erreur>=seuil:
-#         abscisse=i
-#         alpha=alpha[:i+1]
-#         Erreur.append(seuil)
-#         break
-#     Erreur.append(valeur_erreur)
+
+# pour avoir juste ordre 2
+temps=[0.002*i for i in range(1,22)]
+alpha=[c*dt/dx for dt in temps]
+Erreur=[]
+for i,t in enumerate (temps):
+    valeur_erreur=erreur(t,dx)
+    if valeur_erreur>=seuil:
+        abscisse=i
+        alpha=alpha[:i+1]
+        Erreur.append(seuil)
+        break
+    Erreur.append(valeur_erreur)
         
 
-# # ticks=np.arange(0,alpha[abscisse],0.05)
-# plt.figure(figsize=(8, 5))
-# plt.plot(alpha,Erreur,'x',label='ordre 2')
-# plt.xlabel("alpha")
-# plt.ylabel("Erreur")
-# plt.title("Erreur en fonction SEM  du CFL")
-# # plt.xticks(ticks)
-# plt.legend()
-# plt.grid()
-# plt.show()
+
+plt.figure(figsize=(8, 5))
+plt.plot(alpha,Erreur,'x',label='ordre 2')
+plt.xlabel("alpha")
+plt.ylabel("Erreur")
+plt.title("Erreur en fonction SEM  du CFL")
+
+plt.legend()
+plt.grid()
+plt.show()
 
 # # ordre 2 à 2k
 # plt.figure(figsize=(8, 5))
@@ -120,23 +122,25 @@ def erreur_2(k,dt,dx):
 # plt.legend()
 # plt.xlabel("alpha")
 # plt.ylabel("Erreur")
-# plt.title("Erreur en fonction du CFL FDM pour différent ordre d'approximation en temps")
+# plt.title("Erreur en fonction du CFL SEM pour différent ordre d'approximation en temps")
 # plt.grid()
 # plt.show()
 
-#Pour pouvoir enlever certaines courbes
+# Pour pouvoir enlever certaines courbes
 # ordre 2 à 2k
-temps=[0.03+0.001*i for i in range(0,100)]
+temps=[0.03+0.001*i for i in range(0,150)]
 alpha=[c*dt/dx for dt in temps]
 
 # Préparation des données
+alpha_max=[]
 erreurs_par_ordre = []
 labels = []
 for j in range(1, k + 1):
     Erreur = []
-    for t in temps:
+    for i,t in enumerate(temps):
         valeur_erreur = erreur_2(j, t,dx)
         if valeur_erreur >= seuil:
+            alpha_max.append(alpha[i-1])
             Erreur.append(seuil)
             break
         Erreur.append(valeur_erreur)
@@ -145,7 +149,7 @@ for j in range(1, k + 1):
 
 # Création de la figure
 fig, ax = plt.subplots()
-plt.subplots_adjust(left=0.25)  # Laisser de l'espace pour les widgets
+plt.subplots_adjust(left=0.30)  # Laisser de l'espace pour les widgets
 
 # Tracer les courbes
 courbes = []
@@ -156,7 +160,7 @@ for j, Erreur in enumerate(erreurs_par_ordre):
 # Configuration des axes
 ax.set_xlabel("alpha")
 ax.set_ylabel("Erreur")
-ax.set_title("Erreur en fonction du CFL FDM pour différents ordres")
+ax.set_title("Erreur en fonction du CFL SEM pour différents ordres")
 ax.legend()
 ax.grid(True)
 
@@ -175,4 +179,10 @@ check.on_clicked(toggle_visibility)
 
 # Afficher le graphique
 plt.show()
-
+plt.figure()
+plt.scatter([2*j for j in range(1,k+1)],alpha_max,)
+plt.grid()
+plt.xlabel("ordre d'aproximation temporelle")
+plt.ylabel("alpha max")
+plt.title("limites de stabilité en fonction de l'ordre d'approximation en temps")
+plt.show()

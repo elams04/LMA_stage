@@ -205,9 +205,12 @@ if __name__=="__main__":
     #Paramètre simul/matériaux/Onde/Source/
     nombre_point_minimun=200
     
-
+    
+    #Soit on fixe c et don on laisse mat et rho =1 ou on fixe rho et mat et donc c=1
     mat=np.eye(1)
     rho=np.eye(1)
+    c=1
+    
     Longueur=10
     dt=0.01
     dx=0.1
@@ -216,7 +219,7 @@ if __name__=="__main__":
     L=int(Longueur/dx) #nombre d'élements mais L+1 noeuds
     Duree=30
     N=int(Duree/dt) #nombre d'intervale de temps
-    c=1
+    
     
     alpha=c*dt/dx
     
@@ -224,7 +227,7 @@ if __name__=="__main__":
     f=0.5
     periode=1/f
     a=Longueur/2    #endroit où de la source
-    exemplepoint=5  # observation en un point quelconque
+    exemplepoint=1  # observation en un point quelconque
     instant=20       #observation en un temps quelconque
     amplitude=10
 
@@ -281,7 +284,7 @@ if __name__=="__main__":
     plt.legend()
     plt.show()
     
-    # Observation en un point quelconque 
+    # Observation en un temps quelconque 
 
     
     plt.figure(figsize=(8, 5))
@@ -300,15 +303,15 @@ if __name__=="__main__":
     # plt.legend()
     # plt.show()
      
-    # # Visualisation dU déplacement sur tout le
-    # plt.figure(figsize=(10, 6))
-    # plt.title(f"Solution élements spectraux de l'équation de d'Alembert r={r} ")
-    # plt.pcolormesh(t, Mesh, U, shading='auto', cmap='jet')
-    # plt.colorbar(label="Amplitude")
-    # plt.xlabel("Temps (s)")
-    # plt.ylabel("Position (x)")
-    # plt.grid(True)
-    # plt.show()
+    # Visualisation dU déplacement sur tout le
+    plt.figure(figsize=(10, 6))
+    plt.title(f"Solution élements spectraux de l'équation de d'Alembert r={r} ")
+    plt.pcolormesh(t, Mesh, U, shading='auto', cmap='jet')
+    plt.colorbar(label="Amplitude")
+    plt.xlabel("Temps (s)")
+    plt.ylabel("Position (x)")
+    plt.grid(True)
+    plt.show()
 
     # fig, ax=plt.subplots(subplot_kw={"projection":"3d"})
     # x,y=np.meshgrid(t,Mesh)

@@ -46,8 +46,8 @@ if __name__ == "__main__":
     f=0.5     # frequence
     omega = 2.0 * np.pi *f  # Fréquence angulaire (ajustée)
     T = 1/f  # Durée d'émission qui corespond à une periode
-    dt=0.01
-    dx=0.05
+    dt=0.001
+    dx=0.01
     
     # Paramètres temporels et spacial
     t_max = 30.0  # Durée totale de simulation
@@ -75,19 +75,19 @@ if __name__ == "__main__":
     
             
             
-    # # # Visualisation de la solution exacte 
-    # plt.figure(figsize=(10, 6))
-    # plt.title("Solution exacte de l'équation de d'Alembert")
-    # plt.pcolormesh(t, X, U, shading='auto', cmap='jet')
-    # plt.colorbar(label="Amplitude")
-    # plt.xlabel("Temps (s)")
-    # plt.ylabel("Position (x)")
-    # plt.grid(True)
-    # plt.show()
+    # # Visualisation de la solution exacte 
+    plt.figure(figsize=(10, 6))
+    plt.title("Solution exacte de l'équation de d'Alembert")
+    plt.pcolormesh(t, X, U, shading='auto', cmap='jet')
+    plt.colorbar(label="Amplitude")
+    plt.xlabel("Temps (s)")
+    plt.ylabel("Position (x)")
+    plt.grid(True)
+    plt.show()
     
     # Tracer le déplacement en fonction de la position
     plt.figure(figsize=(8, 5))
-    plt.plot(X, U[:,int(instant/dt)], label=f'Déplacement en t={x_0}')
+    plt.plot(X, U[:,int(instant/dt)], label=f'Déplacement en t={instant}')
     plt.xlabel('Temps t')
     plt.ylabel('Déplacement u(x, t)')
     plt.title("Déplacement sur tout le domaine en un temps donées")
@@ -97,22 +97,22 @@ if __name__ == "__main__":
     plt.show()
     
 
-    #Animation
+    # Animation
 
-    # fig=plt.figure()
-    # plt.xlabel("longueur")
-    # plt.ylabel("deplacement")
-    # plt.title("probleme 1D propagation onde")
-    # line,=plt.plot([],[])
-    # plt.xlim(0,L)
-    # plt.ylim(-A*5,A*5)
+    fig=plt.figure()
+    plt.xlabel("longueur")
+    plt.ylabel("deplacement")
+    plt.title("probleme 1D propagation onde")
+    line,=plt.plot([],[])
+    plt.xlim(0,L)
+    plt.ylim(-A*5,A*5)
 
 
-    # def animate(i):
-    #      line.set_data(X,U[:,i])
-    #      return line,
-    # ani = animation.FuncAnimation(fig, animate, frames=range(0, n_points, 1), interval=10, blit=True, repeat=False)
+    def animate(i):
+         line.set_data(X,U[:,i])
+         return line,
+    ani = animation.FuncAnimation(fig, animate, frames=range(0, n_points, 50), interval=0.01, blit=True, repeat=False)
 
-    # # Enregistrement de l'animation
-    # ani.save("propagation_ondes_solution_exacte_bis.mp4", writer="ffmpeg", fps=30)
-    # plt.show()
+    # Enregistrement de l'animation
+    ani.save("propagation_ondes_solution_exacte_bis.mp4", writer="ffmpeg", fps=30)
+    plt.show()

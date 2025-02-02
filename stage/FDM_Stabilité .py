@@ -5,22 +5,23 @@ Created on Tue Jan  7 11:35:07 2025
 @author: Utilisateur
 """
 import numpy as np
+import math
 from matplotlib.widgets import CheckButtons
 
 from FDM_bis import matrice_depl_fdm
 from solution_exact_bis import matrice_depl_exact
 from FDM_approche_mod import matrice_depl_fdm_mod
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 c=1
 dx=0.05
 k=6
-Longueur=10
-duree=30
-exemplepoint=1
+Longueur=20
+duree=21
 f=0.5
 T=1/f
 omega=2*np.pi*f
-Amplitude=10 
+Amplitude=1 
 a=Longueur/2
 instant=20
 seuil=20
@@ -64,45 +65,67 @@ def erreur_2(k,dt,dx):
     return erreur
 
 
-
-# # pour avoir juste ordre 2
+#pour avoir juste ordre 2
 #dt varie
-# temps=[0.040+0.001*i for i in range(0,30)]
-# alpha=[c*dt/dx for dt in temps]
-# Erreur=[]
-# for i,t in enumerate (temps):
-#     valeur_erreur=erreur(t,dx)
-#     if valeur_erreur>=seuil:
-#         abscisse=i
-#         alpha=alpha[:i+1]
-#         Erreur.append(seuil)
-#         break
-#     Erreur.append(valeur_erreur)
+temps=[0.03+0.002*i for i in range(0,10)]
+alpha=[c*dt/dx for dt in temps]
+Erreur=[]
+for i,t in enumerate (temps):
+    valeur_erreur=erreur(t,dx)
+    if valeur_erreur>=seuil:
+        abscisse=i
+        alpha=alpha[:i+1]
+        Erreur.append(seuil)
+        break
+    Erreur.append(valeur_erreur)
 
-# dx varie
-# dt=0.01
-# espace=[0.005+0.001*i for i in range(0,50)]
-# alpha=[c*dt/dx for dt in espace]
-# Erreur=[]
-# for i,x in enumerate (espace):
-#     valeur_erreur=erreur(dt,x)
-#     if valeur_erreur>=seuil:
-#         abscisse=i
-#         alpha=alpha[:i+1]
-#         Erreur.append(seuil)
-#     Erreur.append(valeur_erreur)
+# #dx varie
+# # dt=0.01
+# # espace=[0.008+0.001*i for i in range(11,0,-1)]
+# # alpha=[c*dt/pe for pe in espace]
+# # Erreur=[]
+# # for i,x in enumerate (espace):
+# #     valeur_erreur=erreur(dt,x)
+# #     if valeur_erreur>=seuil or math.isnan(valeur_erreur):
+# #         alpha=alpha[:i+1]
+# #         Erreur.append(seuil)
+# #         break
+# #     else: 
+# #         Erreur.append(valeur_erreur)
         
 
-# # ticks=np.arange(0,alpha[abscisse],0.05)
-# plt.figure(figsize=(8, 5))
-# plt.plot(alpha,Erreur,'x',label='ordre 2')
-# plt.xlabel("alpha")
-# plt.ylabel("Erreur")
-# plt.title("Erreur en fonction SEM  du CFL")
-# # plt.xticks(ticks)
-# plt.legend()
-# plt.grid()
+
+plt.figure(figsize=(8, 5))
+plt.plot(alpha,Erreur,'x',label='ordre 2')
+plt.xlabel("alpha")
+plt.ylabel("Erreur")
+plt.title("Erreur FDM ordre 2 en fonction du CFL")
+plt.legend()
+plt.grid()
+plt.show()
+
+# # Carte 
+# DX=np.linspace(0.01,0.05,21)
+# DT=np.linspace(0.01,0.05,21)
+# Erreur=np.zeros((21,21))
+# for i,t in enumerate(DT) :
+#     for j,x in enumerate(DX):
+#         valeur_erreur=erreur(t,x)
+#         if valeur_erreur>seuil or math.isnan(valeur_erreur) :
+#             Erreur[j,i]=seuil
+#         else:
+#             Erreur[j,i]=valeur_erreur
+# X,T=np.meshgrid(DX,DT)
+# fig = plt.figure(figsize=(10, 7))
+# ax = fig.add_subplot(111, projection='3d')
+# surf = ax.plot_surface(X, T, Erreur, cmap='viridis', edgecolor='none')  
+
+# ax.set_xlabel('dx')
+# ax.set_ylabel('dt')
+# ax.set_zlabel('erreur')
 # plt.show()
+          
+            
 
 # # ordre 2 à 2k
 # temps=[0.045+0.0001*i for i in range(0,100)]
@@ -131,8 +154,8 @@ def erreur_2(k,dt,dx):
 # plt.grid()
 # plt.show()
 
-##
-# ordre 2 à 2k
+#
+ordre 2 à 2k
 temps=[0.043+0.001*i for i in range(0,100)]
 alpha=[c*dt/dx for dt in temps]
 
